@@ -8,6 +8,7 @@ from geopy.geocoders import Nominatim
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 from matplotlib.ticker import MultipleLocator
+from matplotlib.dates import AutoDateLocator, DateFormatter
 import openmeteo_requests
 import requests_cache
 from retry_requests import retry
@@ -191,7 +192,7 @@ def plot_air_quality_forecast(city: str, street: str, df: pd.DataFrame, file_pat
 
     # Set the y-axis to a logarithmic scale
     ax.set_yscale('log')
-    ax.set_yticks([0, 10, 25, 50, 100, 250, 500])
+    ax.set_yticks([1, 10, 25, 50, 100, 250, 500])
     ax.get_yaxis().set_major_formatter(plt.ScalarFormatter())
     ax.set_ylim(bottom=1)
 
@@ -200,6 +201,7 @@ def plot_air_quality_forecast(city: str, street: str, df: pd.DataFrame, file_pat
     ax.set_title(f"PM2.5 Predicted (Logarithmic Scale) for {city}, {street}")
     ax.set_ylabel('PM2.5')
 
+    # Add colored bands for air quality categories
     colors = ['green', 'yellow', 'orange', 'red', 'purple', 'darkred']
     labels = ['Good', 'Moderate', 'Unhealthy for Some', 'Unhealthy', 'Very Unhealthy', 'Hazardous']
     ranges = [(0, 49), (50, 99), (100, 149), (150, 199), (200, 299), (300, 500)]
@@ -210,14 +212,13 @@ def plot_air_quality_forecast(city: str, street: str, df: pd.DataFrame, file_pat
     patches = [Patch(color=colors[i], label=f"{labels[i]}: {ranges[i][0]}-{ranges[i][1]}") for i in range(len(colors))]
     legend1 = ax.legend(handles=patches, loc='upper right', title="Air Quality Categories", fontsize='x-small')
 
-    # Aim for ~10 annotated values on x-axis, will work for both forecasts ans hindcasts
-    if len(df.index) > 11:
-        every_x_tick = len(df.index) / 10
-        ax.xaxis.set_major_locator(MultipleLocator(every_x_tick))
+    # Format the x-axis with custom date format
+    ax.xaxis.set_major_locator(AutoDateLocator())  # Auto locates dates for better readability
+    ax.xaxis.set_major_formatter(DateFormatter("%Y-%m-%d"))  # Format as YYYY-MM-DD
 
     plt.xticks(rotation=45)
 
-    if hindcast == True:
+    if hindcast:
         ax.plot(day, df['pm25'], label='Actual PM2.5', color='black', linewidth=2, marker='^', markersize=5, markerfacecolor='grey')
         legend2 = ax.legend(loc='upper left', fontsize='x-small')
         ax.add_artist(legend1)
@@ -225,7 +226,7 @@ def plot_air_quality_forecast(city: str, street: str, df: pd.DataFrame, file_pat
     # Ensure everything is laid out neatly
     plt.tight_layout()
 
-    # # Save the figure, overwriting any existing file with the same name
+    # Save the figure, overwriting any existing file with the same name
     plt.savefig(file_path)
     return plt
 
@@ -295,11 +296,54 @@ def check_file_path(file_path):
     else:
         print(f"File successfully found at the path: {file_path}")
 
-def backfill_predictions_for_monitoring(weather_fg, air_quality_df, monitor_fg, model):
+def backfill_predictions_for_monitoring_old(weather_fg, air_quality_df, monitor_fg, model):
     features_df = weather_fg.read()
     features_df = features_df.sort_values(by=['date'], ascending=True)
     features_df = features_df.tail(10)
     features_df['predicted_pm25'] = model.predict(features_df[['temperature_2m_mean', 'precipitation_sum', 'wind_speed_10m_max', 'wind_direction_10m_dominant']])
+    df = pd.merge(features_df, air_quality_df[['date','pm25','street','country']], on="date")
+    df['days_before_forecast_day'] = 1
+    hindcast_df = df
+    df = df.drop('pm25', axis=1)
+    monitor_fg.insert(df, write_options={"wait_for_job": True})
+    return hindcast_df
+
+
+# Rewriting the backfill_predictions_for_monitoring function to use the new feature group
+def backfill_predictions_for_monitoring(weather_fg, air_quality_df, monitor_fg, model):
+    features_df = weather_fg.read()
+    features_df = features_df.sort_values(by=['date'], ascending=True)
+    features_df = features_df.tail(12)
+    features_df = features_df.reset_index(drop=True)
+
+    # Extract only the date part (remove time) from the 'date' column
+    air_quality_df['date2'] = air_quality_df['date'].dt.date
+    min_date = features_df['date'].min().date()
+    aq_today_df = air_quality_df[air_quality_df['date2'] == min_date]
+    features_df['pm25_lag_1'] = aq_today_df['pm25'].iloc[0]
+    features_df['pm25_lag_2'] = aq_today_df['pm25_lag_1'].iloc[0]
+    features_df['pm25_lag_3'] = aq_today_df['pm25_lag_2'].iloc[0]
+    features_df['predicted_pm25'] = 0
+
+    for day_ahead in range(len(features_df.index)):
+
+        # Extract the features for the day ahead
+        predicted_day = features_df.iloc[day_ahead]
+
+        # Predict the PM2.5 value for the day ahead
+        predicted_value = model.predict(predicted_day[['pm25_lag_1', 'pm25_lag_2', 'pm25_lag_3', 'temperature_2m_mean',
+                                                       'precipitation_sum', 'wind_speed_10m_max', 'wind_direction_10m_dominant']].values.reshape(1, -1))[0].astype('float64')
+
+        # Update the predicted PM2.5 value in the dataframe
+        features_df.loc[day_ahead, 'predicted_pm25'] = predicted_value
+
+        # Update the lag features for the next prediction (if not the last day)
+        if day_ahead < days_ahead - 1:
+            features_df.loc[day_ahead + 1, 'pm25_lag_3'] = features_df.loc[day_ahead, 'pm25_lag_2']
+            features_df.loc[day_ahead + 1, 'pm25_lag_2'] = features_df.loc[day_ahead, 'pm25_lag_1']
+            features_df.loc[day_ahead + 1, 'pm25_lag_1'] = features_df.loc[day_ahead, 'predicted_pm25']
+        
+    # features_df['predicted_pm25'] = model.predict(features_df[['pm25_lag_1', 'pm25_lag_2', 'pm25_lag_3', 'temperature_2m_mean', 'precipitation_sum', 'wind_speed_10m_max', 'wind_direction_10m_dominant']]).astype('float64')
     df = pd.merge(features_df, air_quality_df[['date','pm25','street','country']], on="date")
     df['days_before_forecast_day'] = 1
     hindcast_df = df
