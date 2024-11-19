@@ -28,22 +28,22 @@ This project builds an **Air Quality Forecasting Service** using data from air q
 
 
 ### **Key Components**  
-1. **Data Connection**  
+#### 1. **Data Connection**  
    - Integrates with Open Meteo and World Air Quality Index APIs to access weather forecasts and air quality data. It also accesses historical data from a local  `.csv` file which contains air quality measurements throughout the years until 17.11.2024. 
 
-2. **Historical Data Backfill**  
+#### 2. **Historical Data Backfill**  
    - Processes and stores historical air quality sensor and weather data.  
    - Creates the feature groups `weather` and  `air_quality` with lagged air quality metrics for the previous 3 days.  
 
-3. **Feature Pipeline**  
+#### 3. **Feature Pipeline**  
    - Updates feature groups `weather` and  `air_quality` daily with real-time data from the air quality and weather APIs.  
 
-4. **Training Pipeline** 
-- The component retrieves the data from the feature groups `weather` and  `air_quality` and creates a feature view which allows to define a schema used to define model target feature/labels.  
-- Trains an XGBoost regression model using the following features: temperature, wind speed and direction, amount of rain and air quality for the previous 3 days.
-- Saves the model as a model registry in  `air_quality_xgboost_model`.
+#### 4. **Training Pipeline** 
+   - The component retrieves the data from the feature groups `weather` and  `air_quality` and creates a feature view which allows to define a schema used to define model target feature/labels.  
+   - Trains an XGBoost regression model using the following features: temperature, wind speed and direction, amount of rain and air quality for the previous 3 days.
+   - Saves the model as a model registry in  `air_quality_xgboost_model`.
 
-5. **Inference Pipeline**  
+#### 5. **Inference Pipeline**  
    - Retrieves the trained model and uses the feature groups to generate daily predictions for the next 9 days.  
    - Stores predictions in the feature group `aq_predictions`.  
 
