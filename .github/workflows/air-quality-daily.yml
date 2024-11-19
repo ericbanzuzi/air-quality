@@ -3,7 +3,7 @@ name: air-quality-daily
 on:
   workflow_dispatch:
   schedule:
-    - cron: '00 6 * * *'
+    - cron: '00 7 * * *'
 
 jobs:
   schedule_pipelines:
@@ -32,6 +32,7 @@ jobs:
           HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
         run: |
           jupyter nbconvert --to notebook --execute 2_air_quality_feature_pipeline.ipynb
+          sleep 5
           jupyter nbconvert --to notebook --execute 4_air_quality_batch_inference.ipynb
 
       - name: github pages publish
