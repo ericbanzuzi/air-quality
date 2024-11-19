@@ -324,8 +324,10 @@ def backfill_predictions_for_monitoring(weather_fg, air_quality_df, monitor_fg, 
     features_df['pm25_lag_2'] = aq_today_df['pm25_lag_1'].iloc[0]
     features_df['pm25_lag_3'] = aq_today_df['pm25_lag_2'].iloc[0]
     features_df['predicted_pm25'] = 0
+    
+    days_ahead = len(features_df.index)
 
-    for day_ahead in range(len(features_df.index)):
+    for day_ahead in range(days_ahead):
 
         # Extract the features for the day ahead
         predicted_day = features_df.iloc[day_ahead]
