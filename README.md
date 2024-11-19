@@ -1,33 +1,87 @@
-## Predict Air Quality
+# Air Quality Prediction Service for Amsterdam, Vondelpark  
 
-This project builds an Air Quality Forecasting Service for an Air Quality sensor available at https://waqi.info/.
+This project builds an **Air Quality Forecasting Service** using data from air quality sensors and weather forecasts. The service predicts air quality levels for Amsterdam's Vondelpark and provides an interactive interface to explore both predictions and historical data. The project is based on Chapter 3 of the [O'Reilly book - Building Machine Learning Systems with a Feature Store](https://github.com/featurestorebook/mlfs-book).
+
+---
+
+## Overview  
+
+| **Dynamic Data**                     | **Prediction Problem**                            | **User Interface**                                                                | **Monitoring**   |
+|--------------------------------------|--------------------------------------------------|-----------------------------------------------------------------------------------|------------------|
+| - Air Quality Sensor: [aqicn.org](https://aqicn.org/city/netherland/amsterdam/vondelpark/) <br> - Weather Forecasts: [open-meteo.com](https://open-meteo.com/) | Daily forecast of PM2.5 levels for the next 9 days at the Amsterdam Vondelpark sensor. | Interactive [Dashboard](https://ericbanzuzi.github.io/air-quality/air-quality) hosted on GitHub Pages for viewing predictions and trends. | Hindcasts for model evaluation. |
+
+---
+
+## Features  
+
+### **Daily Predictions**  
+- **Model**: Uses an XGBRegressor model to predict PM2.5 levels in Amsterdam near Vondelpark.  
+- **Automation**: Scheduled via GitHub Actions to run at 7:00 UTC daily.  
+
+### **Dashboard**  
+- An [interactive dashboard](https://ericbanzuzi.github.io/air-quality/air-quality/)  displays air quality predictions and trends.  
+
+---
+
+## Application Architecture  
+<img width="1360" alt="Screenshot 2024-11-19 at 20 40 54" src="https://github.com/user-attachments/assets/8d63ba4f-496e-4414-a3ed-7ca9db158efe">
 
 
-The output is a forecast for air quality, like this one:
+### **Key Components**  
+1. **Data Connection**  
+   - Integrates with Open Meteo and World Air Quality Index APIs to access weather forecasts and air quality data. It also accesses historical data from a local  `.csv` file which contains air quality measurements throughout the years until 17.11.2024. 
 
-![Air quality Prediction](https://featurestorebook.github.io/mlfs-book/air-quality/assets/img/pm25_forecast.png)
+2. **Historical Data Backfill**  
+   - Processes and stores historical air quality sensor and weather data.  
+   - Creates the feature groups `weather` and  `air_quality` with lagged air quality metrics for the previous 3 days.  
 
+3. **Feature Pipeline**  
+   - Updates feature groups `weather` and  `air_quality` daily with real-time data from the air quality and weather APIs.  
 
-## Personalized Air Quality Predictions with a LLM
+4. **Training Pipeline** 
+- The component retrieves the data from the feature groups `weather` and  `air_quality` and creates a feature view which allows to define a schema used to define model target feature/labels.  
+- Trains an XGBoost regression model using the following features: temperature, wind speed and direction, amount of rain and air quality for the previous 3 days.
+- Saves the model as a model registry in  `air_quality_xgboost_model`.
 
-This air quality forecasting service has been augmented with LLM capabilities. You can ask it both future (forecasting) and historical questions about air quality at your location via a microphone or text input dialog.
-
-The RAG in this application augments the prompt with:
- * your location,
- * today’s date,
- * predicted air quality (from a ML model),
- * historical air quality (from the feature store),
- * are you in a sensitive group (coming soon).
-
-
-![Personalized Air Quality with LLMs Architecture](personalized-air-quality-with-llms.png)
-
-
-## Application Architecture
-
-![Application Architecture Air Quality with LLMs Architecture](app-air-quality-with-llms.png)
+5. **Inference Pipeline**  
+   - Retrieves the trained model and uses the feature groups to generate daily predictions for the next 9 days.  
+   - Stores predictions in the feature group `aq_predictions`.  
 
 
-## Tutorial Instructions
+### **Pipeline Scheduling**  
 
-You can find [instructions for running this tutorial in this Google Doc](https://docs.google.com/document/d/1YXfM1_rpo1-jM-lYyb1HpbV9EJPN6i1u6h2rhdPduNE/edit?usp=sharing).
+The architecture diagram shows that components 2 and 4 operate on a daily schedule, ensuring updates to the feature groups and generating predictions. In contrast, components 1 and 3 are triggered only when there is a need to generate or modify the feature groups, model, or feature view. The resulting inferences are then displayed through a dashboard hosted on GitHub Pages.
+
+---
+## Getting Started  
+
+### **Prerequisites**  
+- Python 3.8 or higher.  
+- Required libraries (listed in `requirements.txt`).  
+
+### **Installation**  
+1. Clone the repository:  
+   ```bash  
+   git clone https://github.com/ericbanzuzi/air-quality.git  
+   cd air-quality  
+   ```  
+2. Install dependencies:  
+   ```bash  
+   pip install -r requirements.txt  
+   ```  
+
+Refer to the [Google Doc Tutorial](https://docs.google.com/document/d/1YXfM1_rpo1-jM-lYyb1HpbV9EJPN6i1u6h2rhdPduNE/edit?usp=sharing) for step-by-step instructions for setting up the service.  
+
+ 
+---
+
+## Acknowledgments  
+
+- **Data Sources**:  
+  - [World Air Quality Index](https://waqi.info/)  
+  - [OpenMeteo](https://open-meteo.com/)  
+- **Book Reference**:  
+  - [Building Machine Learning Systems with a Feature Store](https://github.com/featurestorebook/mlfs-book).  
+- Inspired by real-world applications of air quality forecasting and interactive ML systems.  
+ 
+
