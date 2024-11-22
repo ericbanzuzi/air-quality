@@ -24,7 +24,7 @@ This project builds an **Air Quality Forecasting Service** using data from air q
 ---
 
 ## Application Architecture  
-<img width="1360" alt="Screenshot 2024-11-19 at 20 40 54" src="https://github.com/user-attachments/assets/8d63ba4f-496e-4414-a3ed-7ca9db158efe">
+![architecture](https://github.com/user-attachments/assets/c2eba349-1dd0-4878-ada5-f64b8470550b)
 
 
 ### **Key Components**  
