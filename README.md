@@ -16,7 +16,7 @@ This project builds an **Air Quality Forecasting Service** using data from air q
 
 ### **Daily Predictions**  
 - **Model**: Uses an XGBRegressor model to predict PM2.5 levels in Amsterdam near Vondelpark.  
-- **Automation**: Scheduled via GitHub Actions to run at 7:00 UTC daily.  
+- **Automation**: Scheduled via GitHub Actions to run at 11:00 UTC daily.  
 
 ### **Dashboard**  
 - An [interactive dashboard](https://ericbanzuzi.github.io/air-quality/air-quality/)  displays air quality predictions and trends.  
