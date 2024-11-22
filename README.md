@@ -52,6 +52,17 @@ This project builds an **Air Quality Forecasting Service** using data from air q
 
 The architecture diagram shows that components 2 and 4 operate on a daily schedule, ensuring updates to the feature groups and generating predictions. In contrast, components 1 and 3 are triggered only when there is a need to generate or modify the feature groups, model, or feature view. The resulting inferences are then displayed through a dashboard hosted on GitHub Pages.
 
+
+---
+
+## Model Insights
+
+### Performance on test test 
+![image](https://github.com/user-attachments/assets/f32199a8-0adf-4a8e-95bd-083f903e5783)
+
+### Feature importance 
+![image](https://github.com/user-attachments/assets/af80887f-497b-4991-95cd-9b05ab8b5486)
+
 ---
 ## Getting Started  
 
