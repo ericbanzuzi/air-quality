@@ -67,7 +67,11 @@ The architecture diagram shows that components 2 and 4 operate on a daily schedu
 
 | **With Lagged Air Quality Features**                                   | **Baseline Model (No Lagged Air Quality Features)**                              |
 |------------------------------------------------------------------------|----------------------------------------------------------------------------------|
-| ![image](https://github.com/user-attachments/assets/af80887f-497b-4991-95cd-9b05ab8b5486) | ![no_lag_featurs_importance](https://github.com/user-attachments/assets/e1a484d4-5a17-4537-851d-f2d900c8d6f8) |
+| ![image](https://github.com/user-attachments/assets/af80887f-497b-4991-95cd-9b05ab8b5486) | ![no_lag_featurs_importance](https://github.com/user-attachments/assets/90f63728-33a1-450b-a69c-8a9fbf0c0f96) |
+
+
+
+
 
 
 
