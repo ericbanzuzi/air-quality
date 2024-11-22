@@ -57,11 +57,20 @@ The architecture diagram shows that components 2 and 4 operate on a daily schedu
 
 ## Model Insights
 
-### Performance on test test 
-![image](https://github.com/user-attachments/assets/f32199a8-0adf-4a8e-95bd-083f903e5783)
+### Performance on Test Set
 
-### Feature importance 
-![image](https://github.com/user-attachments/assets/af80887f-497b-4991-95cd-9b05ab8b5486)
+| **With Lagged Air Quality Features**                                   | **Baseline Model (No Lagged Air Quality Features)**                              |
+|------------------------------------------------------------------------|----------------------------------------------------------------------------------|
+| ![image](https://github.com/user-attachments/assets/f32199a8-0adf-4a8e-95bd-083f903e5783) | ![no_lag_features](https://github.com/user-attachments/assets/b2ad8ffe-4498-423b-807c-20889d53fd7a) |
+
+### Feature Importance
+
+| **With Lagged Air Quality Features**                                   | **Baseline Model (No Lagged Air Quality Features)**                              |
+|------------------------------------------------------------------------|----------------------------------------------------------------------------------|
+| ![image](https://github.com/user-attachments/assets/af80887f-497b-4991-95cd-9b05ab8b5486) | ![no_lag_featurs_importance](https://github.com/user-attachments/assets/e1a484d4-5a17-4537-851d-f2d900c8d6f8) |
+
+
+
 
 ---
 ## Getting Started  
