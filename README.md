@@ -70,6 +70,12 @@ The architecture diagram shows that components 2 and 4 operate on a daily schedu
 | ![image](https://github.com/user-attachments/assets/af80887f-497b-4991-95cd-9b05ab8b5486) | ![no_lag_featurs_importance](https://github.com/user-attachments/assets/90f63728-33a1-450b-a69c-8a9fbf0c0f96) |
 
 
+### Evaluation Metrics
+
+| **With Lagged Air Quality Features**                                   | **Baseline Model (No Lagged Air Quality Features)**                              |
+|------------------------------------------------------------------------|----------------------------------------------------------------------------------|
+| MSE: 132.10945 <br> $R^2$: 0.45563056383138867 | MSE: 248.32582 <br> $R^2$: -0.013791852486070288
+
 
 
 
